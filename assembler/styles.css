@@ -1,0 +1,346 @@
+html {
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	overflow: hidden;
+	position: relative;
+	overflow: -moz-hidden-unscrollable;
+	margin: 0;
+	width: 100%;
+	height: 100%;
+	background-color: #eee;
+	font-family: monospace;
+}
+
+pre {
+	margin: 0;
+}
+
+input[type="checkbox"] {
+	vertical-align: middle;
+}
+
+#page {
+	width: 100vw;
+	height: 100vh;
+	flex-direction: column;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	grid-template-rows: 0fr 1fr 150px;
+	grid-template-areas:
+		"controls controls"
+		"assembly machine-code"
+		"assembly-status machine-code-status";
+}
+
+@media (max-width: 900px) {
+	#page {
+		grid-template-columns: 1fr;
+		grid-template-rows: 0fr 1fr 100px 1fr 100px;
+		grid-template-areas:
+			"controls"
+			"assembly"
+			"assembly-status"
+			"machine-code"
+			"machine-code-status";
+	}
+}
+
+#controls {
+	justify-self: start;
+	grid-area: controls;
+	display: flex;
+	padding: 0 10px;
+}
+
+#controls>form {
+	display: grid;
+	column-gap: 20px;
+	grid-template-rows: 1fr 1fr 1fr;
+	grid-template-areas:
+		"target-arch syntax-highlighting labels"
+		"output-format source raw-output"
+		"address-format none none";
+}
+
+#controls>form>div {
+	padding: 0.2em;
+}
+
+#control-send {
+	padding: 0.2em 0.5em;
+}
+
+#config-syntax-highlighting {
+	grid-area: syntax-highlighting;
+}
+
+#config-raw-output {
+	grid-area: raw-output;
+}
+
+#config-line-numbers {
+	grid-area: config-line-numbers;
+}
+
+#config-target-arch {
+	grid-area: target-arch;
+}
+
+#config-target-arch button {
+	min-width: 130px;
+}
+
+#config-output-format {
+	grid-area: output-format;
+}
+
+#config-address-format {
+	grid-area: address-format;
+}
+
+#config-labels {
+	grid-area: labels;
+}
+
+#config-source {
+	grid-area: source;
+}
+
+#control-send {
+	grid-area: send;
+}
+
+#assembly {
+	overflow: auto;
+	grid-area: assembly;
+	display: grid;
+	/* TODO: tabs and line numbers */
+	grid-template-columns: 0px 1fr;
+	grid-template-rows: 0px 1fr;
+	grid-template-areas:
+		"tabs tabs"
+		"lines text";
+}
+
+#assembly.show-line-numbers {
+	grid-template-columns: 30px 1fr;
+}
+
+#assembly .ldt {
+	grid-area: text;
+	flex: 1px;
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	display: block;
+	border: none;
+	resize: none;
+	tab-size: 4;
+	/* font-size: 1em; */
+	/* padding: 0.5em; */
+	background-color: #fff;
+	color: #000;
+}
+
+#assembly .ldt pre .error {
+	text-decoration: underline dotted red;
+}
+
+#assembly #tabs {
+	grid-area: tabs;
+	background-color: white;
+}
+
+#assembly #line-numbers {
+	grid-area: lines;
+	background-color: white;
+}
+
+#assembly-status {
+	padding: 0.5em;
+	background-color: #eee;
+	overflow: auto;
+	grid-area: assembly-status;
+}
+
+#machine-code {
+	grid-area: machine-code;
+}
+
+#machine-code-status {
+	padding: 0.5em;
+	grid-area: machine-code-status;
+}
+
+#machine-code-text {
+	display: block;
+	flex: 1;
+	border: none;
+	font-size: 1em;
+	padding: 0.5em;
+	background-color: #fff;
+	color: #000;
+	overflow: auto;
+	white-space: nowrap
+}
+
+#machine-code-text .address {
+	margin-right: 2em;
+	color: #aaa;
+}
+
+#machine-code-text .source {
+	margin-left: 2em;
+	color: #aaa;
+}
+
+#machine-code-text .label {
+	font-style: italic;
+}
+
+#machine-code-text > pre.current {
+	background-color: #ffe3c0;
+}
+
+#machine-code-text > pre .address {
+	cursor: pointer;
+}
+
+#machine-code-text > pre.breakpoint .address {
+	background-color: #ffcccc;
+}
+
+#emulator {
+	overflow: auto;
+	font-size: 0.8em;
+	padding: 0.5em;
+}
+
+/* TextareaDecorator.css
+ * written by Colin Kuebler 2012
+ * Part of LDT, dual licensed under GPLv3 and MIT
+ * Provides styles for rendering a textarea on top of a pre with scrollbars
+ */
+
+/* settings you can play with */
+
+.ldt,
+.ldt label {
+	padding: 4px;
+}
+
+.ldt,
+.ldt pre,
+.ldt textarea {
+	font-size: 1em !important;
+	/* resize algorithm depends on a monospaced font */
+	font-family: monospace !important;
+}
+
+.ldt textarea {
+	/* hide the text but show the text caret */
+	color: transparent;
+	/* Firefox caret position is slow to update when color is transparent */
+	color: rgba(0, 0, 0, 0.004);
+	caret-color: #000;
+}
+
+/* settings you shouldn't play with unless you have a good reason */
+
+.ldt {
+	overflow: auto;
+	position: relative;
+}
+
+.ldt pre {
+	margin: 0;
+}
+
+.ldt label {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: inline;
+	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	cursor: text;
+}
+
+.ldt textarea {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: 0;
+	outline: none;
+	resize: none;
+	min-width: 100%;
+	min-height: 100%;
+	overflow: hidden;
+	/* IE doesn't support rgba textarea, so use vendor specific alpha filter */
+	filter: alpha(opacity=20);
+}
+
+
+/* --- custom --- */
+
+
+/* .ldt .comment {
+	color: rgb(150, 150, 150);
+}
+
+.ldt .directive {
+	font-weight: bold;
+	color: rgb(0, 90, 0);
+}
+
+.ldt .number {
+	color: navy;
+}
+
+.ldt .label {
+	color: rgb(208, 42, 163);
+	font-weight: bold;
+}
+
+.ldt .instruction {
+	color: rgb(103, 100, 255);
+}
+
+.ldt .register {
+	color: rgb(53, 179, 164);
+} */
+
+.theme-rars .ldt .comment {
+	color: #35d048;
+}
+
+.theme-rars .ldt .directive {
+	color: #ff5aff;
+}
+
+.theme-rars .ldt .number {
+	color: black;
+}
+
+.theme-rars .ldt .label {
+	color: black;
+	font-style: italic;
+}
+
+.theme-rars .ldt .instruction {
+	color: #1e1eff;
+}
+
+.theme-rars .ldt .register {
+	color: #ff231d;
+}
+
+.theme-rars .ldt .string {
+	color: green;
+}

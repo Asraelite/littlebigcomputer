@@ -1,0 +1,93 @@
+; CPU version 0.1
+; GPU version 0.1 on IO port 1
+
+nop
+b _start
+
+characters:
+char_H: ; 0
+.data 0b000000_100010_100010_111110 0b100010_100010_100010_000000
+char_e: ; 1
+.data 0b000000_000000_011000_100100 0b111100_100000_011100_000000
+char_l: ; 2
+.data 0b000000_100000_100000_100000 0b100000_100000_010000_000000
+char_o: ; 3
+.data 0b000000_000000_011000_100100 0b100100_100100_011000_000000
+char_w: ; 4
+.data 0b000000_000000_101010_101010 0b101010_101010_010100_000000
+char_r: ; 5
+.data 0b000000_000000_111000_100000 0b100000_100000_100000_000000
+char_d: ; 6
+.data 0b000100_011100_100100_100100 0b100100_100100_011100_000000
+
+_start:
+
+li x6, 1 ; x position
+li x7, 1 ; y position
+
+sw zero, 0b01_0100_000000(upper) ; gpu clear screen
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; H
+lw x0, 0(char_H)(zero) ; upper 24 pixels
+lw x1, 1(char_H)(zero) ; lower 24 pixels
+sd x01, 0b01_0010_000000(upper) ; gpu print 6x8 char
+addi x6, x6, 6 ; x position += 6
+
+; e
+lw x0, 0(char_e)(zero)
+lw x1, 1(char_e)(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+
+; l
+lw x0, 0(char_l)(zero)
+lw x1, 1(char_l)(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+
+; l
+lw x0, 0(char_l)(zero)
+lw x1, 1(char_l)(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+
+; o
+lw x0, 0(char_o)(zero)
+lw x1, 1(char_o)(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+
+; w
+lw x0, 0(char_w)(zero)
+lw x1, 1(char_w)(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+
+; o
+lw x0, 0(char_o)(zero)
+lw x1, 1(char_o)(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+
+; r
+lw x0, 0(char_r)(zero)
+lw x1, 1(char_r)(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+
+; l
+lw x0, 0(char_l)(zero)
+lw x1, 1(char_l)(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+
+; d
+lw x0, 0(char_d)(zero)
+lw x1, 1(char_d)(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+
+sd x01, 0b01_0011_000000(upper) ; gpu print buffer to screen
+
+wfi

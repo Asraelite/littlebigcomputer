@@ -1,0 +1,33 @@
+li x0, program_end ; x0 = start
+li x1, 0xff ; x1 = end
+
+mv x2, x0
+
+loop_write:
+
+xori x3, x2, 0xaaa
+sw x3, 0(x2)
+addi x2, x2, 1
+ble x2, x1, loop_write
+
+mv x2, x0
+
+loop_read:
+
+xori x3, x2, 0xaaa
+lw x4, 0(x2)
+bne x3, x4, error
+addi x2, x2, 1
+ble x2, x1, loop_read
+
+success:
+
+li x0, 0
+wfi
+
+error:
+
+mv x0, x2
+wfi
+
+program_end:

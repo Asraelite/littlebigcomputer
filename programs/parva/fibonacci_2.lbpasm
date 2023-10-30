@@ -1,0 +1,24 @@
+li x0, 1
+li x1, 0
+
+li x2, 30 ; nth fibonacci number to calculate
+
+andi x4, x2, 1 ; x4 = n odd?
+srli x2, x2, 1 ; n /= 2
+
+loop:
+
+add x0, x0, x1
+add x1, x0, x1
+subi x2, x2, 1
+bnez x2, loop
+
+beqz x4, no_final_iteration
+
+add x1, x0, x1
+
+no_final_iteration:
+
+mv x0, x1
+li x1, 0
+wfi

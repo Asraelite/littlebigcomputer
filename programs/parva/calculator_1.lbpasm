@@ -1,0 +1,96 @@
+# target parva_0_1
+
+li sp, stack
+
+# function
+tokenize:
+	push ra
+	addi x2, a0, -1 # x2 = pointer to input string
+
+	li x0, -1
+	push x0 # mark the beginning of the token stack
+
+tokenize__loop:
+	addi x2, x2, 1
+	lw x3, x2
+	beqz x3, tokenize__end
+	li x4, '0'
+	blt x3, x4, tokenize__symbol
+	li x5, '9'
+	bgt x3, x5, tokenize__symbol
+
+	mv x6, sp
+.align 2
+tokenize__number_gather:
+	push x3
+	addi x2, x2, 1
+	addi x3, x3, -'0'
+	lw x3, x2
+	blt x3, x4, tokenize__number_gather_end
+	bgt x3, x5, tokenize__number_gather_end
+	b tokenize__number_gather
+tokenize__number_gather_end:
+	li x0, 0 # x0 = sum
+	li x7, 1 # x7 = power of 10
+.align 2
+tokenize__number_sum:
+	pop x3
+	mulu x3, x3, x7
+	add x0, x0, x3
+	mului x7, x7, 10
+	bne x6, sp, tokenize__number_sum
+
+	li x3, 1 # token type = 1 = number
+	push x3
+	push x0
+	b tokenize__loop
+
+tokenize__symbol:
+	xori x3, x3, 42 # todo, set to appropriate value for hashing symbols
+	lw x3, tokenize__symbol_hashtable(x3)
+	beqz x3, error_invalid_input
+	push x3
+	b tokenize__loop
+
+tokenize__end:
+
+tokenize__shunting_yard:
+	pop x3
+	bnez x3, 3
+	
+
+
+b end
+
+tokenize__output_queue:
+	.repeat 0 40
+
+tokenize__symbol_hashtable:
+	.data 0
+	.data 1
+	.repeat 0 30 # todo
+
+error_invalid_input:
+	li a0, error_message_invalid_input
+	li a1, 1
+	call print
+	b end
+
+# function
+print:
+	# todo
+	ret
+
+end:
+	wfi
+
+input_string:
+.string_encoding terminal
+.string "125+23*8"
+.string "\0"
+
+error_message_invalid_input:
+.string_encoding ascii # todo, use correct encoding
+.string "Invalid input\0"
+
+stack:

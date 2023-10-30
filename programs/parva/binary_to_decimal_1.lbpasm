@@ -1,0 +1,103 @@
+lw x0, value
+li x1, 0
+
+# https://ridiculousfish.com/blog/posts/labor-of-division-episode-i.html
+dec_to_bin_loop:
+	lw x4, ten_powers(x1)
+	beqz x4, end_dec_to_bin_loop
+	slli x5, x1, 1
+	lw x3, ten_divisors(x5)
+	lw x5, (ten_divisors + 1)(x5)
+	mulhu x6, x0, x3
+	sub x7, x0, x6
+	srli x7, x7, 1
+	add x3, x7, x6
+	srl x3, x3, x5 # x3 = digit of result
+	sw x3, result_string(x1)
+	mulu x3, x3, x4
+	sub x0, x0, x3
+	addi x1, x1, 1
+	b dec_to_bin_loop
+end_dec_to_bin_loop:
+
+sw x0, result_string(x1)
+li x0, -1
+li x6, 1 # cursor x
+li x7, 1 # cursor y
+sw x0, 0b01_0100_000000(upper) # gpu clear screen
+
+skip_zeroes:
+	addi x0, x0, 1
+	lw x1, result_string(x0)
+	beqz x1, skip_zeroes
+print_loop:
+	sd x67, 0b01_0000_000000(upper) # gpu move cursor
+	lw x1, result_string(x0)
+	bltz x1, end_print_loop
+	slli x1, x1, 1
+	lw x2, char_pixels(x1)
+	lw x3, (char_pixels + 1)(x1)
+	sd x23, 0b01_0010_000000(upper) # gpu print char
+	addi x6, x6, 4
+	addi x0, x0, 1
+	b print_loop
+end_print_loop:
+
+sd x01, 0b01_0011_000000(upper) # gpu show buffer
+wfi
+
+ten_powers:
+.data 10000000
+.data 1000000
+.data 100000
+.data 10000
+.data 1000
+.data 100
+.data 10
+.data 0
+
+ten_divisors:
+.data 0xad7f2a 23 # 10000000
+.data 0x0c6f7b 19 # 1000000
+.data 0x4f8b59 16 # 100000
+.data 0xa36e2f 13 # 10000
+.data 0x0624de 9 # 1000
+.data 0x47ae15 6 # 100
+.data 0x99999a 3 # 10
+
+char_pixels:
+.data 0b111000_101000_101000_101000 # 0
+.data 0b111000_000000_000000_000000
+
+.data 0b001000_001000_001000_001000 # 1
+.data 0b001000_000000_000000_000000
+
+.data 0b111000_001000_111000_100000 # 2
+.data 0b111000_000000_000000_000000
+
+.data 0b111000_001000_111000_001000 # 3
+.data 0b111000_000000_000000_000000
+
+.data 0b101000_101000_111000_001000 # 4
+.data 0b001000_000000_000000_000000
+
+.data 0b111000_100000_111000_001000 # 5
+.data 0b111000_000000_000000_000000
+
+.data 0b111000_100000_111000_101000 # 6
+.data 0b111000_000000_000000_000000
+
+.data 0b111000_001000_001000_010000 # 7
+.data 0b010000_000000_000000_000000
+
+.data 0b111000_101000_111000_101000 # 8
+.data 0b111000_000000_000000_000000
+
+.data 0b111000_101000_111000_001000 # 9
+.data 0b001000_000000_000000_000000
+result_string:
+.repeat 0 8
+.data -1
+
+value:
+.data 6942069

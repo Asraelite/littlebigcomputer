@@ -1,0 +1,12 @@
+li x0, 0
+li x1, 1
+li x2, 20
+
+loop:
+
+add x0, x0, x1
+add x1, x0, x1
+subi x2, x2, 1
+bnez x2, loop
+
+wfi

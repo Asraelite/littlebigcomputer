@@ -1,0 +1,105 @@
+; calculate all primitive pythogorean triples (a^2 + b^2 = c^2) where c <= 32
+
+nop
+b _start
+
+results:
+.repeat 0 15
+
+table:
+.repeat 0 33
+
+result_index:
+.data 0
+
+_start:
+
+li x7, 32 ; limit
+li x0, 1 ; prime
+li x2, 1 ; prime factor bit
+slli x2, x2, 23
+
+loop_prime:
+
+addi x0, x0, 1
+bgt x0, x7, squares
+lw x4, table(x0)
+srli x4, x4, 12
+bnez x4, loop_prime
+mv x3, x0 ; multiple
+
+loop_index:
+
+lw x4, table(x3) ; x4 = current prime factor bits
+or x4, x4, x2 ; x4 |= add current prime factor bit
+sw x4, table(x3)
+add x3, x3, x0
+ble x3, x7, loop_index
+srli x2, x2, 1 ; update prime bit
+b loop_prime
+
+squares:
+
+li x0, 0 ; n
+li x1, 0 ; n^2
+
+loop_squares:
+
+lw x4, table(x0) ; 70
+or x4, x4, x1
+sw x4, table(x0)
+add x1, x1, x0
+add x1, x1, x0
+addi x1, x1, 1
+addi x0, x0, 1
+ble x0, x7, loop_squares
+
+li x0, 1 ; a = 1
+
+iterate_a:
+
+addi x0, x0, 1 ; 79
+bgt x0, x7, end
+lw x2, table(x0) ; a^2 (with prime bits)
+mv x6, x0 ; b = a
+
+iterate_b:
+
+addi x6, x6, 1 ; 83
+bgt x6, x7, iterate_a
+lw x3, table(x6) ; b^2 (with prime bits)
+and x4, x2, x3 ; check if a and b are coprime
+srli x4, x4, 12
+bnez x4, iterate_b ; 87
+add x3, x2, x3
+andi x3, x3, 0o77 ; a^2 + b^2
+mv x5, x6 ; x5 = c = b
+
+; x0 = a, x1 = sp, x2 = a^2, x3 = a^2+b^2, x4 = (unused)
+; x5 = c, x6 = b, x7 = limit
+
+iterate_c:
+
+addi x5, x5, 1 ; c++ ; 92
+bgt x5, x7, iterate_b
+lw x4, table(x5) ; x4 = c^2|cp
+andi x4, x4, 0o77 ; x4 = c^2
+bgt x4, x3, iterate_b
+bne x5, x3, iterate_c
+
+; found triple
+
+; x0 = a, x6 = b, x5 = c
+
+lw x4, result_index
+sw x0, 0(x4)
+sw x6, 1(x4)
+sw x5, 2(x4)
+addi x4, x4, 3
+sw x4, result_index
+
+b iterate_a
+
+end:
+
+wfi

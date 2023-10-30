@@ -1,0 +1,59 @@
+; Parva CPU version 0.1
+; Parva GPU version 0.1 on IO port 0x1
+
+nop
+b _start
+
+string:
+.data 1 2 3 3 4 8 5 4 6 3 7 0
+
+characters:
+; upper 24 pixels, lower 24 pixels, width
+char_null: ; 0
+.data 0
+characters_plus_1:
+.data 0
+characters_plus_2:
+.data 0
+char_H: ; 1
+.data 0b000000_100010_100010_111110 0b100010_100010_100010_000000 6
+char_e: ; 2
+.data 0b000000_000000_011000_100100 0b111100_100000_011100_000000 5
+char_l: ; 3
+.data 0b000000_100000_100000_100000 0b100000_100000_010000_000000 3
+char_o: ; 4
+.data 0b000000_000000_011000_100100 0b100100_100100_011000_000000 5
+char_w: ; 5
+.data 0b000000_000000_101010_101010 0b101010_101010_010100_000000 6
+char_r: ; 6
+.data 0b000000_000000_011000_100000 0b100000_100000_100000_000000 4
+char_d: ; 7
+.data 0b000000_000100_011100_100100 0b100100_100100_011100_000000 5
+char_space: ; 8
+.data 0 0 4
+
+_start:
+
+sw x0, 0b01_0100_000000(upper) ; gpu clear screen
+li x6, 1 ; x position
+li x7, 1 ; y position
+li x0, string
+loop:
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+lw x1, 0(x0) ; x1 = current character
+beqz x1, end
+add x2, x1, x1
+add x1, x2, x1 ; x1 *= 3
+lw x2, characters(x1) ; upper 24 pixels
+lw x3, characters_plus_1(x1) ; lower 24 pixels
+sd x01, 0b01_0011_000000(upper) ; gpu print buffer to screen
+sd x23, 0b01_0010_000000(upper) ; gpu print 6x8 char
+lw x4, characters_plus_2(x1) ; width
+add x6, x6, x4 ; x position += width
+addi x0, x0, 1
+b loop
+
+end:
+
+sd x01, 0b01_0011_000000(upper) ; gpu print buffer to screen
+wfi

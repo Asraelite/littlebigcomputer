@@ -1,0 +1,35 @@
+font_data:
+	.data 0x8b18a9 0xf9a9d7 0xeba9a0 0xdeadbe 0xefdead 0xbeefde...
+
+.export _start:
+	li x0, font_data
+	li x1, 16 # font data array length
+	add x3, x0, x1
+
+loop_1:
+	lw x2, 0(x0)
+	gpu.sw x2, 0(x1)
+	addi x0, 1
+	blt x0, x3 loop_1
+
+	li x6, 0
+loop_2:
+	kb.rw x0
+	beq x0, x6, loop_2
+
+	and x1, x0, 0x0f
+	li x4, 2 # x position
+	li x5, 2 # y position
+
+	# first char
+	srl x1, x0, 4
+	gpu.move x4, x5
+	gpu.pchar x1
+
+	# second char
+	addi x4, x4, 6
+	gpu.move x4, x5
+	gpu.pchar x1
+
+	gpu.swap
+	b loop_2

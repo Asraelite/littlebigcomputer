@@ -1,0 +1,109 @@
+li sp, stack
+
+j main
+
+main:
+	sw x0, gpu_clear_screen(upper)
+
+	li x6, 1
+	li x7, 1
+	sd x67, cursor_pos
+	li a0, 6942069
+	call print_number
+	
+	li x6, 1
+	li x7, 7
+	sd x67, cursor_pos
+	li a0, 12345678
+	call print_number
+
+	wfi
+
+.eq gpu_clear_screen 0b01_0100_000000
+.eq gpu_move_cursor 0b01_0000_000000
+.eq gpu_print_char 0b01_0010_000000
+.eq gpu_show_buffer 0b01_0011_000000
+
+
+# void print_number(*void return: ra, int number: a0)
+.address 128
+print_number:
+	push ra
+	mv x0, a0
+	li x2, 0
+	li x4, 10000000
+
+	.align 2
+	print_number__bin_to_dec_loop:
+		divu x3, x0, x4
+		remu x0, x0, x4
+		sw x3, print_number__result_string(x2)
+		divui x4, x4, 10
+		addi x2, x2, 1
+		bnez x4, print_number__bin_to_dec_loop
+
+	li x0, -1
+	ld x67, cursor_pos
+	print_number__skip_zeroes:
+		addi x0, x0, 1
+		lw x4, print_number__result_string(x0)
+		beqz x4, print_number__skip_zeroes
+	print_number__print_loop:
+		lw x4, print_number__result_string(x0)
+		bltz x4, print_number__end_print_loop
+		sd x67, gpu_move_cursor(upper)
+		slli x4, x4, 1
+		ld x23, print_number__char_pixels(x4)
+		addi x6, x6, 4
+		addi x0, x0, 1
+		sd x23, gpu_print_char(upper)
+		b print_number__print_loop
+	print_number__end_print_loop:
+	sd x01, gpu_show_buffer(upper) # gpu show buffer
+	sw x6, (cursor_pos + 0)
+	pop ra
+	j ra
+
+	print_number__char_pixels:
+	.data 0b111000_101000_101000_101000 # 0
+	.data 0b111000_000000_000000_000000
+
+	.data 0b001000_001000_001000_001000 # 1
+	.data 0b001000_000000_000000_000000
+
+	.data 0b111000_001000_111000_100000 # 2
+	.data 0b111000_000000_000000_000000
+
+	.data 0b111000_001000_111000_001000 # 3
+	.data 0b111000_000000_000000_000000
+
+	.data 0b101000_101000_111000_001000 # 4
+	.data 0b001000_000000_000000_000000
+
+	.data 0b111000_100000_111000_001000 # 5
+	.data 0b111000_000000_000000_000000
+
+	.data 0b111000_100000_111000_101000 # 6
+	.data 0b111000_000000_000000_000000
+
+	.data 0b111000_001000_001000_010000 # 7
+	.data 0b010000_000000_000000_000000
+
+	.data 0b111000_101000_111000_101000 # 8
+	.data 0b111000_000000_000000_000000
+
+	.data 0b111000_101000_111000_001000 # 9
+	.data 0b001000_000000_000000_000000
+	print_number__result_string:
+	.repeat 0 8
+	.data -1
+# end print_number()
+
+.align 2
+cursor_pos:
+.data 1
+.data 1
+
+.align 2
+stack:
+.data 0

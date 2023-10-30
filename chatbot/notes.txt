@@ -1,0 +1,51 @@
+Entering chat into Twitch
+
+In the PS5, when livestream messages are configured to display:
+>=101 characters => does not show anything
+99 or 100 characters => the final 3 turn into an ellipsis
+<=98 characters => all show
+
+a b c d e, result
+
+100 characters is some kind of limit
+150 is the limit?
+140?
+other chars affect the result (limit is based on all message chars, not just matching ones?)
+
+a*100 + b + e = 98 1 1
+ab*100 + e = 50 50 0
+ab*50 + e = 49 50 1
+a*50 + b*50 = 50 50
+a*51 + b*51 = 49 51
+x*50 + a*50 + b*50 = 55.56 44.44
+a*200 + b*200 = 100 0
+a*120 + b*120 = 80 20
+a*150 + b = 100 0
+a*149 + b = 100 0
+a*140 + b*10 = 100 0
+a*130 + b*20 = 90 10
+a*130 + b*10 = 90 10
+a*130 + b = 99 1
+a*130 + b*2 = 98 2
+a*130 + b*5 = 95 5
+'aaaaaaaaaa '*13 + b*5 = 100 0
+
+it's only counting at most 10 b's?
+
+'a '*60 + 'b '*40 = 85.71 14.29 (6x more a, 60 a, 10 b)
+'a '*100 + 'b '*100 = 100 0
+'a '*50 + 'b '*50 = 71.43 28.57 (2.5x more a, 50 a, 20 b)
+'d ' + 'a '*50 + 'b '*50 = 71.43 27.14 1.43
+
+a + b*100 = 0 100
+a + 'b '*100 = 1.41 98.59 (70x more b)
+ac + 'b '*100 = 1.41 97.13 1.41
+ac + 'b '*150 = 1.41 97.13 1.41
+
+if a term appears at least once, 10 slots are allocated to it, 150 slots in total?
+
+acd + 'b '*150 = 1.39 95.83 1.39 1.39
+'acd ' + 'b '*150 = 1.41 95.77 + 1.41 + 1.41 (67.92x more b)
+
+a*70 + b*10 + c*10 + d*10 = 70 10 10 10
+a*80 + b*10 + c*10 + d*10 = 70 10 10 10

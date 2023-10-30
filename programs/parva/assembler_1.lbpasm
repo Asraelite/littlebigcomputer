@@ -1,0 +1,48 @@
+hash_table:
+	.data blablabla
+
+
+parse_line:
+	li 
+	rw t0, 0(a0)
+	srli t1, 18
+	beqz end_of_line
+	sub t1, t0, t1
+
+end_of_line:
+
+.char_encoding lbpc1
+
+get_instruction:
+
+a-z 0-9 () , space enter
+
+li x2, 0 ; cursor position in line
+
+listen:
+iord x0, 1, 0 ; get char from keyboard (device 1, buffer 0)
+beqz listen
+sub x1, x0, 'a'
+.eq diff 'z' - 'a'
+bleu x1, diff, okay
+sub x1, x0, '0'
+.eq diff '9' - '0'
+bleu x1, diff, okay
+
+beq x0, ' ', okay
+beq x0, '\n', okay
+beq x0, '(', okay
+beq x0, ')', okay
+beq x0, ',', okay
+b invalid_input
+
+invalid_input:
+iow 3, 1, 0o1214 ; play buzzing sound (sound card is device 3, play direct value command is 1)
+b listen
+
+okay:
+iow 2, 2, x0, 0 ; print character x0 (gpu is device 2, print char command is 2)
+addi x2, x2, 1 ; move cursor right
+
+
+

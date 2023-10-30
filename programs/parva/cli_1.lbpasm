@@ -1,0 +1,13 @@
+split_args: ; fn([str8; len]) -> ( [[str8; len]; len] )
+	push ra
+	ld x01, 0(r0) ; x0 = pointer to first char, x1 = length
+loop:
+	lw t0, 0(a0)
+	andi t0, a0, 0o77
+	beqz end
+	
+	end:
+
+hash:
+	
+

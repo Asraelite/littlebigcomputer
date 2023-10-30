@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="icon" type="image/png" href="favicon.png">
+	<link rel="stylesheet" type="text/css" href="styles.css">
+
+	<script src="ldt/lib/Parser.js" type="text/javascript"></script>
+	<script src="ldt/lib/TextareaDecorator.js" type="text/javascript"></script>
+	<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+	<script type="module" src="main.js"></script>
+	<style>
+
+	</style>
+</head>
+
+<body>
+	<div id="page">
+		<div id="controls">
+			<form>
+				<div id="config-target-arch">
+					<label for="config-target-arch-select">target: </label>
+					<select id="config-target-arch-select">
+						<option value="v8">V8</option>
+						<option value="parva_0_1">Parva 0.1</option>
+						<option value="lodestar">Lodestar</option>
+					</select>
+					<button type="button" id="config-target-arch-docs-button">Show docs</button>
+				</div>
+				<div id="config-syntax-highlighting">
+					<label for="config-syntax-highlighting-select">syntax highlighting: </label>
+					<select id="config-syntax-highlighting-select">
+						<option value="rars">RARS</option>
+						<option value="none">none</option>
+					</select>
+				</div>
+				<div id="config-raw-output">
+					<label for="config-raw-output-input">raw output: </label>
+					<input type="checkbox" id="config-raw-output-input">
+				</div>
+				<!-- <div id="config-line-numbers">
+				<label for="config-line-numbers-input">line numbers: </label>
+				<input type="checkbox" id="config-labels-input">
+			</div> -->
+				<div id="config-output-format">
+					<label for="config-output-format-select">output format: </label>
+					<select id="config-output-format-select">
+						<option value="hex">hex</option>
+						<option value="binary">binary</option>
+						<option value="decimal">decimal</option>
+						<option value="note">note</option>
+					</select>
+				</div>
+				<div id="config-address-format">
+					<label for="config-address-format-select">address format: </label>
+					<select id="config-address-format-select">
+						<option value="hex">hex</option>
+						<option value="binary">binary</option>
+						<option value="decimal">decimal</option>
+						<option value="note">note</option>
+						<option value="none">none</option>
+					</select>
+				</div>
+				<div id="config-labels">
+					<label for="config-labels-input">labels in output: </label>
+					<input type="checkbox" id="config-labels-input">
+				</div>
+				<div id="config-breakponts">
+					<label for="config-breakpoints">enable breakpoints: </label>
+					<input type="checkbox" id="config-breakpoints">
+				</div>
+				<div id="config-source">
+					<label for="config-source-select">inline source: </label>
+					<select id="config-source-select">
+						<option value="none">none</option>
+						<option value="instruction">real instruction</option>
+						<option value="source">source instruction</option>
+						<option value="comments">source instruction with comments</option>
+					</select>
+				</div>
+			</form>
+			<div id="control-send">
+				<label for="control-send-speed">delay (ms): </label>
+				<input type="number" id="control-send-speed" value="1500" min="300" max="10000">
+				<label for="control-send-start">start address: </label>
+				<input type="number" id="control-send-start" value="0" min="0" max="4095">
+				<br />
+				<button id="control-send-button">Send to LBP</button>
+				<button id="control-send-cancel-button" disabled>Cancel</button>
+				<pre id="control-send-status"></pre>
+			</div>
+		</div>
+		<div id="assembly">
+			<div id="tabs"></div>
+			<div class="line-numbers"></div>
+			<textarea id="assembly-input" autofocus></textarea>
+		</div>
+		<pre id="assembly-status"></pre>
+		<div id="machine-code-text">
+			<!-- <div class="line-numbers"></div>
+			<div class="text"></div>
+			<div class="source"></div> -->
+		</div>
+		<div id="emulator">
+			<div id="emulator-controls">
+				<button id="emulator-control-reset">Reset</button>
+				<button id="emulator-control-step">Step</button>
+				<button id="emulator-control-step-10">Step 10</button>
+				<button id="emulator-control-run">Run</button>
+			</div>
+			<div id="emulator-output">
+			</div>
+		</div>
+	</div>
+	</head>
+</body>
+
+</html>

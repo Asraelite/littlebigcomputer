@@ -1,0 +1,62 @@
+li x0, program_end
+li x1, 512
+
+mv x2, x0
+
+.align 2
+loop_write_word:
+
+xori x3, x2, 0xaaa
+sw x3, 0(x2)
+addi x2, x2, 1
+blt x2, x1, loop_write_word
+
+mv x2, x0
+
+.align 2
+loop_read_word:
+
+xori x3, x2, 0xaaa
+lw x4, 0(x2)
+bne x3, x4, error
+addi x2, x2, 1
+blt x2, x1, loop_read_word
+
+.align 2
+loop_write_double:
+
+xori x6, x2, 0xaaa
+xori x7, x2, 0x555
+sd x67, 0(x2)
+addi x2, x2, 2
+blt x2, x1, loop_write_double
+
+mv x2, x0
+
+.align 2
+loop_read_double:
+
+xori x6, x2, 0xaaa
+xori x7, x2, 0x555
+ld x45, 0(x2)
+bne x4, x6, error
+bne x5, x7, error
+lw x4, 0(x2)
+bne x4, x6, error
+lw x5, 1(x2)
+bne x5, x7, error
+addi x2, x2, 2
+blt x2, x1, loop_read_double
+
+success:
+
+li x0, 0
+wfi
+
+error:
+
+mv x0, x2
+wfi
+
+.align 2
+program_end:

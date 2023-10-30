@@ -1,0 +1,273 @@
+; calculate all primitive pythogorean triples (a^2 + b^2 = c^2) where c <= 32
+
+.eq limit 32
+
+li sp, stack
+
+li x0, 1
+sw x0, cursor_x
+sw x0, cursor_y
+
+sw x0, gpu_clear_screen(upper)
+
+# main stack frame:
+# sp-(limit + 2): table
+# sp-2: a
+# sp-1: a^2
+main: 
+	li x7, limit # limit
+	mv x6, sp # x6 = table base
+	add sp, sp, x7
+	addi sp, sp, 2 # reserve rest of stack frame
+
+	# --- zero-fill table ---
+
+	mv x5, x6
+	li x2, 0
+
+	.align 2
+	main__clear_table:
+	sw x2, 0(x5)
+	addi x5, x5, 1
+	ble x5, sp, main__clear_table
+
+	# --- calculate primes factors ---
+
+	li x0, 1 # x0 = prime
+	li x2, 1 # x2 = prime factor bit
+	
+	main__primes:
+
+	addi x0, x0, 1
+	bgt x0, x7, main__primes_end
+	add x4, x6, x0
+	lw x4, 0(x4)
+	bnez x4, main__primes
+	
+	mv x3, x0 # x3 = multiple
+
+	main__multiples:
+
+	add x5, x6, x3
+	lw x4, 0(x5) # x4 = current prime factor bits
+	or x4, x4, x2 # x4 |= add current prime factor bit
+	sw x4, 0(x5)
+	add x3, x3, x0
+	ble x3, x7, main__multiples
+
+	slli x2, x2, 1 # update prime bit
+	b main__primes
+
+	main__primes_end:
+
+	# --- find pythagorean triples ---
+
+	li x0, 1 # a = 1
+
+	main__iterate_a:
+	
+	lw x0, -2(sp)
+	addi x0, x0, 1 # x0 = a
+	sw x0, -2(sp)
+	bge x0, x7, main__end
+	mulu x2, x0, x0 # x2 = a^2
+	sw x2, -1(sp)
+	add x3, x6, x0
+	lw x3, 0(x3) # x3 = a prime factors
+
+	mv x4, x0 # x4 = b
+
+	main__iterate_b:
+
+	addi x4, x4, 1
+	bgt x4, x7, main__iterate_a
+	add x5, x6, x4
+	lw x5, 0(x5) # x5 = b prime factors
+	and x5, x5, x3
+	bnez x5, main__iterate_b # check if a and b are coprime
+	mulu x5, x4, x4
+	lw x0, -1(sp) # x0 = a^2
+	add x5, x5, x0 # x5 = a^2 + b^2
+
+	mv x0, x4 # x0 = c
+
+	addi x2, x0, 1
+	mulu x2, x2, x2
+	bgt x2, x5, main__iterate_a
+
+	main__iterate_c:
+
+	addi x0, x0, 1 ; c += 1
+	mulu x2, x0, x0 # x2 = c^2
+	bgt x2, x5, main__iterate_b
+	bne x2, x5, main__iterate_c
+
+	# found triple
+	
+	push x6
+	push x7
+	push x0
+	push x4
+	lw a0, -6(sp)
+	call print_number
+
+	lw x6, cursor_x
+	addi x6, x6, 4
+	sw x6, cursor_x
+	
+	pop a0
+	call print_number
+
+	lw x6, cursor_x
+	addi x6, x6, 4
+	sw x6, cursor_x
+	
+	pop a0
+	call print_number
+	
+	# newline
+	li x6, 1
+	sw x6, cursor_x
+	lw x7, cursor_y
+	addi x7, x7, 6
+	sw x7, cursor_y
+
+	pop x7
+	pop x6
+
+	b main__iterate_a
+
+	main__end:
+
+	wfi
+# end main()
+
+.eq gpu_clear_screen 0b01_0100_000000
+.eq gpu_move_cursor 0b01_0000_000000
+.eq gpu_print_char 0b01_0010_000000
+.eq gpu_show_buffer 0b01_0011_000000
+
+cursor_x:
+.data 1
+cursor_y:
+.data 1
+
+# void print_number(*void return: ra, int number: a0)
+print_number:
+	push ra
+	mv x0, a0
+	li x2, 0
+
+	.align 2
+	# https://ridiculousfish.com/blog/posts/labor-of-division-episode-i.html
+	print_number__bin_to_dec_loop:
+		lw x4, print_number__ten_powers(x2)
+
+		beqz x4, print_number__end_bin_to_dec_loop
+		slli x5, x2, 1
+
+		lw x3, print_number__ten_divisors(x5)
+
+		mulhu x6, x0, x3
+		sub x7, x0, x6
+
+		srli x7, x7, 1
+		lw x5, (print_number__ten_divisors + 1)(x5)
+
+		add x3, x7, x6
+		srl x3, x3, x5 # x3 = digit of result
+
+		sw x3, print_number__result_string(x2)
+		mulu x3, x3, x4
+		
+		sub x0, x0, x3
+		addi x2, x2, 1
+		
+		b print_number__bin_to_dec_loop
+	print_number__end_bin_to_dec_loop:
+
+	sw x0, print_number__result_string(x2)
+	li x0, -1
+	lw x6, cursor_x
+	lw x7, cursor_y
+	print_number__skip_zeroes:
+		addi x0, x0, 1
+		lw x4, print_number__result_string(x0)
+		beqz x4, print_number__skip_zeroes
+	print_number__print_loop:
+		sd x67, gpu_move_cursor(upper)
+		nop
+		nop
+		nop # give time for the cursor to move
+		lw x4, print_number__result_string(x0)
+		bltz x4, print_number__end_print_loop
+		slli x4, x4, 1
+		lw x2, print_number__char_pixels(x4)
+		lw x3, (print_number__char_pixels + 1)(x4)
+		addi x6, x6, 4
+		addi x0, x0, 1
+		sd x23, gpu_print_char(upper)
+		b print_number__print_loop
+	print_number__end_print_loop:
+	sd x01, gpu_show_buffer(upper) # gpu show buffer
+	sw x6, cursor_x
+	pop ra
+	j ra
+
+	print_number__ten_powers:
+	.data 10000000
+	.data 1000000
+	.data 100000
+	.data 10000
+	.data 1000
+	.data 100
+	.data 10
+	.data 0
+
+	print_number__ten_divisors:
+	.data 0xad7f2a 23 # 10000000
+	.data 0x0c6f7b 19 # 1000000
+	.data 0x4f8b59 16 # 100000
+	.data 0xa36e2f 13 # 10000
+	.data 0x0624de 9 # 1000
+	.data 0x47ae15 6 # 100
+	.data 0x99999a 3 # 10
+
+	print_number__char_pixels:
+	.data 0b111000_101000_101000_101000 # 0
+	.data 0b111000_000000_000000_000000
+
+	.data 0b001000_001000_001000_001000 # 1
+	.data 0b001000_000000_000000_000000
+
+	.data 0b111000_001000_111000_100000 # 2
+	.data 0b111000_000000_000000_000000
+
+	.data 0b111000_001000_111000_001000 # 3
+	.data 0b111000_000000_000000_000000
+
+	.data 0b101000_101000_111000_001000 # 4
+	.data 0b001000_000000_000000_000000
+
+	.data 0b111000_100000_111000_001000 # 5
+	.data 0b111000_000000_000000_000000
+
+	.data 0b111000_100000_111000_101000 # 6
+	.data 0b111000_000000_000000_000000
+
+	.data 0b111000_001000_001000_010000 # 7
+	.data 0b010000_000000_000000_000000
+
+	.data 0b111000_101000_111000_101000 # 8
+	.data 0b111000_000000_000000_000000
+
+	.data 0b111000_101000_111000_001000 # 9
+	.data 0b001000_000000_000000_000000
+	print_number__result_string:
+	.repeat 0 8
+	.data -1
+# end print_number()
+
+.align 2
+stack:
+.data 0

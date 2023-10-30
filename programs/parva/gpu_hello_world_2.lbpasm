@@ -1,0 +1,117 @@
+; CPU version 0.1
+; GPU version 0.1 on IO port 1
+
+nop
+b _start
+
+characters:
+char_H_top: ; 0
+.data 0b000000_100010_100010_111110
+char_H_bottom:
+.data 0b100010_100010_100010_000000
+char_e_top: ; 1
+.data 0b000000_000000_011000_100100
+char_e_bottom:
+.data 0b111100_100000_011100_000000
+char_l_top: ; 2
+.data 0b000000_100000_100000_100000
+char_l_bottom:
+.data 0b100000_100000_010000_000000
+char_o_top: ; 3
+.data 0b000000_000000_011000_100100
+char_o_bottom:
+.data 0b100100_100100_011000_000000
+char_w_top: ; 4
+.data 0b000000_000000_101010_101010
+char_w_bottom:
+.data 0b101010_101010_010100_000000
+char_r_top: ; 5
+.data 0b000000_000000_111000_100000
+char_r_bottom:
+.data 0b100000_100000_100000_000000
+char_d_top: ; 6
+.data 0b000100_011100_100100_100100
+char_d_bottom:
+.data 0b100100_100100_011100_000000
+
+_start:
+
+li x6, 1 ; x position
+li x7, 1 ; y position
+
+sw x0, 0b01_0100_000000(upper) ; gpu clear screen
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; H
+lw x0, char_H_top(zero) ; upper 24 pixels
+lw x1, char_H_bottom(zero) ; lower 24 pixels
+sd x01, 0b01_0010_000000(upper) ; gpu print 6x8 char
+addi x6, x6, 6 ; x position += 6
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; e
+lw x0, char_e_top(zero)
+lw x1, char_e_bottom(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; l
+lw x0, char_l_top(zero)
+lw x1, char_l_bottom(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; l
+lw x0, char_l_top(zero)
+lw x1, char_l_bottom(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; o
+lw x0, char_o_top(zero)
+lw x1, char_o_bottom(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; w
+lw x0, char_w_top(zero)
+lw x1, char_w_bottom(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; o
+lw x0, char_o_top(zero)
+lw x1, char_o_bottom(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; r
+lw x0, char_r_top(zero)
+lw x1, char_r_bottom(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; l
+lw x0, char_l_top(zero)
+lw x1, char_l_bottom(zero)
+sd x01, 0b01_0010_000000(upper)
+addi x6, x6, 6
+sd x67, 0b01_0000_000000(upper) ; gpu move cursor
+
+; d
+lw x0, char_d_top(zero)
+lw x1, char_d_bottom(zero)
+sd x01, 0b01_0010_000000(upper)
+nop
+nop
+nop ; wait for print to finish
+sd x01, 0b01_0011_000000(upper) ; gpu flush buffer to screen
+
+wfi

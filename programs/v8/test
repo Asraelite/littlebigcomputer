@@ -1,0 +1,30 @@
+LDB #$F0
+JNC bankNoCarry
+NOT B
+bankNoCarry:
+LDA $00
+AND B,A
+OR D,A
+STA $00
+RET
+
+; Memory copy: A=start, B=offset, length=C, destroys D
+copyLoop:
+LDD $00,A
+ADC B,A
+STD $00,A
+DEC C
+JNZ copyLoop
+RET
+
+; Memory copy to screen: A=start, destroys C, D, screen address register
+LDD #$80
+LDC D
+STD $03
+screenCopyLoop:
+
+LDD $00,A
+STD $02
+DEC C
+JNZ screenCopyLoop
+RET

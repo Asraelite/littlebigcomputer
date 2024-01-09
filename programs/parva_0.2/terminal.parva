@@ -1,0 +1,47 @@
+# terminal
+
+.extern f_open, f_close, f_read, write
+.string_encoding system
+
+main: # fn (args: [cstr8]) -> int
+	mv s0, a0
+	push a1
+	li s1, 0
+
+arg_loop:
+	lw t0, 1(sp)
+	beq s1, t0, end
+	lw a0, 0(s0)
+	call f_open # a0 = file descriptor
+	bltz a0, error_open
+	push a0
+	call f_read # a0 = pointer to contents
+	bltz a0, error_read
+	mv a1, a0
+	li a0, 1 # stdout
+	call write
+	pop a0
+	call f_close
+	addi s1, s1, 1
+	b arg_loop
+
+error_read:
+	pop zero
+	mv s0, a1
+	call f_close
+	mv a1, s0
+error_open:
+	mv s0, a1
+	li a0, 1
+	li a1, error_message
+	call write
+	mv a1, s0
+	call write
+	b end
+end:
+	li a0, 0
+	ret
+
+error_message:
+	.string "\fr" # color red
+	.string "Error: \0"

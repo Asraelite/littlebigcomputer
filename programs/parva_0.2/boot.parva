@@ -1,0 +1,11 @@
+# boot
+
+.address 0
+
+entry:
+	# todo: get bit representing if we're in supervisor mode and put in a0
+	beqz a0, user_mode_trap
+	b boot_sequence
+user_mode_trap:
+	int 
+	wfi

@@ -8,7 +8,7 @@ import { ArchName, ArchSpecification, AssemblyInput, AssemblyOutput, Instruction
 import { toNote } from './util.js';
 
 const CONFIG_VERSION: string = '1';
-const EMULATOR_SPEED = 60;
+const EMULATOR_SPEED = 30;
 
 window.addEventListener('load', init);
 
@@ -51,6 +51,7 @@ type ConfigurationSpecification = {
 	syntaxHighlighting: string;
 	inlineSourceFormat: string;
 	rawOutput: boolean;
+	focusEmulator: boolean;
 	sendDelay: number;
 };
 
@@ -62,6 +63,7 @@ class Configuration {
 	syntaxHighlighting: string;
 	inlineSourceFormat: string;
 	rawOutput: boolean;
+	focusEmulator: boolean;
 	sendDelay: number;
 
 	private formElement: HTMLFormElement;
@@ -73,6 +75,7 @@ class Configuration {
 	private targetArchDocsButton: HTMLButtonElement;
 	private syntaxHighlightingSelect: HTMLSelectElement;
 	private rawOutputCheckbox: HTMLInputElement;
+	private focusEmulatorCheckbox: HTMLInputElement;
 	private sendDelayInput: HTMLInputElement;
 
 	constructor() {
@@ -85,6 +88,7 @@ class Configuration {
 		this.targetArchDocsButton = document.getElementById('config-target-arch-docs-button') as HTMLButtonElement;
 		this.syntaxHighlightingSelect = document.getElementById('config-syntax-highlighting-select') as HTMLSelectElement;
 		this.rawOutputCheckbox = document.getElementById('config-raw-output-input') as HTMLInputElement;
+		this.focusEmulatorCheckbox = document.getElementById('config-focus-emulator-input') as HTMLInputElement;
 		this.sendDelayInput = document.getElementById('control-send-speed') as HTMLInputElement;
 
 		this.formElement.addEventListener('change', () => {
@@ -115,9 +119,16 @@ class Configuration {
 		this.machineCodeShowLabels = this.labelsCheckbox.checked;
 		this.inlineSourceFormat = this.inlineSourceSelect.value;
 		this.rawOutput = this.rawOutputCheckbox.checked;
+		this.focusEmulator = this.focusEmulatorCheckbox.checked;
 		this.sendDelay = parseInt(this.sendDelayInput.value);
 
 		document.getElementById('assembly').className = `theme-${this.syntaxHighlighting}`;
+
+		if (this.focusEmulator) {
+			document.getElementById('page').classList.add('emulator');
+		} else {
+			document.getElementById('page').classList.remove('emulator');
+		}
 
 		this.saveToLocalStorage();
 	}
@@ -139,6 +150,7 @@ class Configuration {
 				configuration.targetArch = parsed.targetArch;
 				configuration.syntaxHighlighting = parsed.syntaxHighlighting;
 				configuration.inlineSourceFormat = parsed.inlineSourceFormat;
+				configuration.focusEmulator = parsed.focusEmulator;
 				configuration.rawOutput = parsed.rawOutput;
 				configuration.sendDelay = parsed.sendDelay;
 
@@ -149,6 +161,7 @@ class Configuration {
 				configuration.syntaxHighlightingSelect.value = configuration.syntaxHighlighting;
 				configuration.inlineSourceSelect.value = configuration.inlineSourceFormat;
 				configuration.rawOutputCheckbox.checked = configuration.rawOutput;
+				configuration.focusEmulatorCheckbox.checked = configuration.focusEmulator;
 				configuration.sendDelayInput.value = configuration.sendDelay.toString();
 			}
 		}
@@ -169,6 +182,7 @@ class Configuration {
 			inlineSourceFormat: this.inlineSourceFormat,
 			syntaxHighlighting: this.syntaxHighlighting,
 			rawOutput: this.rawOutput,
+			focusEmulator: this.focusEmulator,
 			sendDelay: this.sendDelay,
 		};
 		localStorage.setItem('configuration', JSON.stringify(values));

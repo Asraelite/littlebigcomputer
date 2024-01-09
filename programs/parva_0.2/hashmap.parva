@@ -1,0 +1,104 @@
+# hashmap
+
+.extern malloc
+.export hashmap__new
+
+# structure:
+# <entry count>
+# <capacity magnitude> (capacity = 2 ^ capacity magnitude)
+# {
+#   <hash>
+#   <value>
+# } * 2^capacity
+
+
+# Uses open addressing
+
+
+# a0 = initial capacity magnitude
+# returns: pointer to hashmap
+hashmap__new:
+	push ra
+	push s0
+	mv s0, a0
+	li a0, 1
+	sll a0, a0, s0
+	addi a0, s0, 2
+	li a1, 0
+	call malloc
+	li t0, 0
+zero_fill_loop:
+	addi t0, t0, 1
+	sw zero, [a0 + t0 + 2]
+	bne t0, s0 zero_fill_loop
+
+	sw zero, [a0 + s0 + 0]
+	sw s0, [a0 + s0 + 1]
+	pop s0
+	pop ra
+	ret
+
+index_from_hash:
+	beqz a1, error
+	li t2, 1
+	lw a3, [a0 + 1]
+	sll t2, t2, a3
+	addi t2, t2, -1
+	and t1, a1, t2
+	add t1, t1, t1
+	jr t0
+
+# a0 = pointer to hashmap
+# a1 = 24-bit hash of key
+# returns: value
+hashmap__get:
+	jal t0, index_from_hash
+get_loop:
+	lw t2, [a0 + t1 + 2] # t2 = hash of entry key
+	beq t2, a1, entry_found
+	beqz t2, entry_not_found
+	addi t1, t1, 2
+	b get_loop
+entry_found:
+	lw a0, [a0 + t0 + 3]
+	ret
+entry_not_found:
+	li a0, 0
+	ret
+
+# a0 = pointer to hashmap
+# a1 = 24-bit hash of key
+# a2 = 24-bit value
+# returns: pointer to value
+hashmap__insert:
+	lw a3, [a0] # entry count
+	lw a4, [a0 + 1] # capacity magnitude
+	li t0, 1
+	addi a5, a4, -1
+	sll a5, t0, a5 # capacity / 2
+	ble a3, a5, insert_no_resize
+	slli a4, a4, 2 # capacity * 2
+	jal s0, resize
+insert_no_resize:
+	jal t0, index_from_hash
+	add a3, a3, a3
+insert_loop:
+	lw t2, [a0 + t1 + 2] # t2 = hash of entry key
+	addi t1, t1, 2
+	bnez t2 slot_found
+
+
+	beq t2, a1, entry_found
+	beqz t2, entry_not_found
+	addi t1, t1, 1
+	b insert_loop
+
+# a4 = new capacity
+resize:
+	push a0, a1, a2, a3, a4
+	mv a0, a4
+	mv s0, t0
+	call hashmap__new
+	pop t0, a1, a2, a3, a4
+	addi a4, a4, 1
+	sw a4, [a0]

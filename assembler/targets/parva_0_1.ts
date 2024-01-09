@@ -618,6 +618,7 @@ class ParvaEmulator implements Emulator {
 		screen: [] as Array<Array<number>>,
 		screenBuffer: [] as Array<Array<number>>,
 	};
+	previousFrameAccessedMemory: boolean = false;
 
 	constructor() { }
 
@@ -632,6 +633,12 @@ class ParvaEmulator implements Emulator {
 	}
 
 	step() {
+
+	}
+
+	stepCore(): boolean {
+		let coreTerminates = false;
+
 		const instruction = this.memory[this.pc] ?? 0;
 		const bits = instruction.toString(2).padStart(24, '0');
 
@@ -715,6 +722,8 @@ class ParvaEmulator implements Emulator {
 					this.memory[address + 1] = valueD1;
 				}
 			}
+
+			this.previousFrameAccessedMemory = true;
 		} else if (operationType === '11') {
 			// branching
 			const special = condition.startsWith('11');
@@ -747,6 +756,7 @@ class ParvaEmulator implements Emulator {
 				result = !result;
 			}
 			if (result) {
+				coreTerminates = true;
 				this.pc = targetAddress - 1;
 			}
 		}
@@ -755,6 +765,7 @@ class ParvaEmulator implements Emulator {
 		this.pc &= 0xffffff;
 		this.cycle += 1;
 		this.cycle &= 0xffffff;
+		return coreTerminates;
 	}
 
 	ioOut(device: number, command: number, valueA: number, valueB: number) {

@@ -166,19 +166,19 @@ blt x2, x3, 2
 add x0, x0, x1
 slli x1, x1, 6
 srli x2, x0, 6
-and x2, x0, 0o77
+andi x2, x0, 0o77
 blt x2, x3, end_score_change
 add x0, x0, x1
 
 slli x1, x1, 6
 srli x2, x0, 6
-and x2, x0, 0o77
+andi x2, x0, 0o77
 blt x2, x3, end_score_change
 add x0, x0, x1
 slli x1, x1, 6
 
 srli x2 x0, 6
-and x2, x0, 0o77
+andi x2, x0, 0o77
 blt x2, x3, end_score_change
 add x0, x0, x1
 

@@ -440,16 +440,16 @@ class V8Emulator implements Emulator {
 			this.pc = this.memory[immediate] ?? 0;
 		} else if (bits === '00000100') {
 			// jz imm
-			this.pc = this.registers[0] === 0 ? immediate : this.pc + 1;
+			this.pc = this.zeroFlag ? immediate : this.pc + 2;
 		} else if (bits === '00000101') {
 			// jnz imm
-			this.pc = this.registers[0] !== 0 ? immediate : this.pc + 1;
+			this.pc = !this.zeroFlag ? immediate : this.pc + 2;
 		} else if (bits === '00000110') {
 			// jc imm
-			this.pc = this.carryFlag ? immediate : this.pc + 1;
+			this.pc = this.carryFlag ? immediate : this.pc + 2;
 		} else if (bits === '00000111') {
 			// jnc imm
-			this.pc = !this.carryFlag ? immediate : this.pc + 1;
+			this.pc = !this.carryFlag ? immediate : this.pc + 2;
 		} else if (bits === '00001000') {
 			// jsr imm
 			this.push(this.pc + 2);
@@ -486,16 +486,16 @@ class V8Emulator implements Emulator {
 			this.aluOp(operand, (x, a) => x + a + (this.carryFlag ? 1 : 0));
 		} else if (bits.startsWith('00011')) {
 			// inc
-			this.aluOp(operand, (x, a) => x + 1);
+			this.aluOp(operand, (x, a) => x + 1, false);
 		} else if (bits.startsWith('00100')) {
 			// sbc
 			this.aluOp(operand, (x, a) => x - a - (this.carryFlag ? 1 : 0));
 		} else if (bits.startsWith('00101')) {
 			// dec
-			this.aluOp(operand, (x, a) => x - 1);
+			this.aluOp(operand, (x, a) => x - 1, false);
 		} else if (bits.startsWith('00110')) {
 			// not
-			this.aluOp(operand, (x, a) => (~x) & 0xff);
+			this.aluOp(operand, (x, a) => (~x) & 0xff, false);
 		} else if (bits.startsWith('00111')) {
 			// xor
 			this.aluOp(operand, (x, a) => x ^ a);
@@ -519,11 +519,11 @@ class V8Emulator implements Emulator {
 			this.pc += 1;
 		} else if (bits.startsWith('01100')) {
 			// rol
-			this.aluOp(operand, (x, a) => (x << 1) + (x >>> 7));
+			this.aluOp(operand, (x, a) => (x << 1) + (x >>> 7), false);
 		} else if (bits.startsWith('01101')) {
 			// ror
 			const initialValue = this.getRegister(operand);
-			this.aluOp(operand, (x, a) => (x >>> 1) + ((x & 1) << 7));
+			this.aluOp(operand, (x, a) => (x >>> 1) + ((x & 1) << 7), false);
 			this.carryFlag = (initialValue & 1) === 1;
 		} else if (bits.startsWith('01110')) {
 			// cmp
@@ -575,13 +575,13 @@ class V8Emulator implements Emulator {
 		}
 	}
 
-	aluOp(register: string, fn: (x: number, a: number) => number) {
+	aluOp(register: string, fn: (x: number, a: number) => number, destinationIsA = true) {
 		const operandValue = this.getRegister(register);
 		const aValue = this.registers[0];
 		const result = fn(operandValue, aValue);
 		this.zeroFlag = result === 0;
-		this.carryFlag = result > 0xff;
-		this.registers[0] = result & 0xff;
+		this.carryFlag = (result & 0xff) !== result;
+		this.setRegister(destinationIsA ? '0' : register, result & 0xff);
 		this.pc += 1;
 	}
 
@@ -634,8 +634,12 @@ class V8Emulator implements Emulator {
 				memoryString += ' ';
 			}
 		}
+		const controlRegistersString = `<span style="background-color: #fcb55b">pc: ${this.pc.toString(16).padStart(2, '0')}</span>, `
+			+ `<span style="background-color: cyan">stack pointer: ${this.memory[STACK_POINTER_ADDRESS].toString(16).padStart(2, '0')}</span>, `
+			+ `carry flag: ${this.carryFlag ? 1 : 0}, `
+			+ `zero flag: ${this.zeroFlag ? 1 : 0}`;
 		return `
-			<pre><span style="background-color: #fcb55b">pc: ${this.pc.toString(16).padStart(2, '0')}</span>,<span style="background-color: cyan"> stack pointer: ${this.memory[STACK_POINTER_ADDRESS].toString(16).padStart(2, '0')}</span></pre>
+			<pre>${controlRegistersString}</pre>
 			<pre>${registersString}</pre>
 			<pre>memory:\n${memoryString}</pre>
 		`;

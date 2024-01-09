@@ -35,6 +35,10 @@ input[type="checkbox"] {
 		"assembly-status machine-code-status";
 }
 
+#page.emulator {
+	grid-template-rows: 0fr 1fr 300px;
+}
+
 @media (max-width: 900px) {
 	#page {
 		grid-template-columns: 1fr;
@@ -62,7 +66,7 @@ input[type="checkbox"] {
 	grid-template-areas:
 		"target-arch syntax-highlighting labels"
 		"output-format source raw-output"
-		"address-format none none";
+		"address-format breakpoints focus-emulator";
 }
 
 #controls>form>div {
@@ -79,6 +83,14 @@ input[type="checkbox"] {
 
 #config-raw-output {
 	grid-area: raw-output;
+}
+
+#config-focus-emulator {
+	grid-area: focus-emulator;
+}
+
+#config-breakpoints {
+	grid-area: breakpoints;
 }
 
 #config-line-numbers {

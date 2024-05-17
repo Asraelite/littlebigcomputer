@@ -1,0 +1,87 @@
+
+# x8: pointer to current char in input string
+
+# I think supporting semi-fast unaligned reads is cheaper than having this alignment logic.
+
+# andi x0, x8, 0b11
+# li x1, 4
+# sub x0, x1, x0
+# add x0, x0, x0
+# addi x0, x0, 1
+# b x0
+
+# lw x0, [x8 + 0]
+# beq x0, x2, (split + 3)
+# lw x0, [x8 + 1]
+# beq x0, x2, (split + 2)
+# lw x0, [x8 + 1]
+# beq x0, x2, (split + 1)
+
+# Frame 1
+
+loop_0:
+
+sw x8, [x9]
+addi x9, x9, 1
+
+li x2, ' '
+
+lq x4:7, x8
+b loop_1_no_align
+
+loop_1:
+
+andi x8, x8, 0b11
+
+# Frame 2
+
+loop_1_no_align:
+
+vindexof.6 x0, x1, x4
+bgez x0, split
+addi x8, x8, 1
+vindexof.6 x0, x1, x5
+bgez x0, split
+addi x8, x8, 1
+vindexof.6 x0, x1, x6
+bgez x0, split
+addi x8, x8, 1
+vindexof.6 x0, x1, x7
+bgez x0, split
+addi x8, x8, 1
+b loop_1
+
+# Frame 8
+
+split:
+
+slli x1, x0, 2
+add x1, x1, x0
+add x1, x1, x0
+sll x1, x2, x1
+lw x0, [x8]
+xor x0, x0, x1
+
+addi x8, x8, 1
+
+# etc.
+
+
+# Frame 15
+
+hash:
+
+li x0, 5381
+
+lw x2, [x3]
+
+loop_2:
+
+slli x1, x0, 5
+add x0, x0, x1
+add x0, x0, x1
+addi x3, x3, 1
+lw x2, [x3]
+andi x1, x2, 0b111111
+bnez x1, loop_2
+

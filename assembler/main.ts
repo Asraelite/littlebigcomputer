@@ -2,13 +2,14 @@ import * as bitUtils from './bit_utils.js';
 
 import targetV8 from './targets/v8.js';
 import targetParva_0_1 from './targets/parva_0_1.js';
+import targetBitzzy from './targets/bitzzy.js';
 import targetLodestar from './targets/lodestar.js';
 import * as targetTest from './targets/test/test.js';
 import { ArchName, ArchSpecification, AssemblyInput, AssemblyOutput, InstructionOutputLine } from './assembly.js';
 import { toNote } from './util.js';
 
 const CONFIG_VERSION: string = '1';
-const EMULATOR_SPEED = 30;
+const EMULATOR_SPEED = 70;
 
 window.addEventListener('load', init);
 
@@ -194,6 +195,8 @@ function getArch(name: string): ArchSpecification {
 		return targetV8;
 	} else if (name === 'parva_0_1') {
 		return targetParva_0_1;
+	} else if (name === 'bitzzy') {
+		return targetBitzzy;
 	} else if (name === 'lodestar') {
 		return targetLodestar as any;
 	} else {

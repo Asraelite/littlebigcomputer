@@ -633,7 +633,12 @@ class ParvaEmulator implements Emulator {
 	}
 
 	step() {
+		const instructionsFetched = (2 - (this.pc % 2)) + (this.previousFrameAccessedMemory ? 0 : 2);
+		this.previousFrameAccessedMemory = false;
 
+		for (let i = 0; i < instructionsFetched; i++) {
+			if (this.stepCore()) break;
+		}
 	}
 
 	stepCore(): boolean {
@@ -724,6 +729,7 @@ class ParvaEmulator implements Emulator {
 			}
 
 			this.previousFrameAccessedMemory = true;
+			coreTerminates = true;
 		} else if (operationType === '11') {
 			// branching
 			const special = condition.startsWith('11');

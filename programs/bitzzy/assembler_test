@@ -1,0 +1,184 @@
+$0:
+hlt
+ret
+rti
+eni
+dsi
+nop
+rem x
+rem y
+rem z
+clr
+
+$1:
+jmp 5
+jmp 5, x
+jmp 5, y
+jmp 5, z
+jsr 5
+jsr 5
+jsr 5, x
+jsr 5, y
+jsr 5, z
+swp x, y
+swp y,x
+swp x,z
+swp z,x
+swp z,y
+swp y,z
+
+$2:
+jmpez x, 5
+jmpez z, 5
+jmpgt x,y, 5
+jmpeq x,y, 5
+jsrez x, 5
+jsrez z, 5
+jsrgt x, y, 5
+jsreq x, y, 5
+lod y, x
+lod z, x
+lod y, x
+lod y, z
+lod x, z
+lod y, z
+
+$3:
+inc x
+inc y
+inc z
+inc 5
+dec x
+dec y
+dec z
+dec 5
+sub x, #5
+sub y, #5
+sub z, #5
+div x, #5
+div y, #5
+div z, #5
+
+$4:
+add x, #5
+sub x, #5
+mul x, #5
+div x, #5
+add x, y
+add x, z
+sub x, y
+sub x,z 
+mul x,y
+mul x,z
+div x,y
+div x,z
+mod x,y
+mod x,z
+
+$5:
+add y, #5
+sub y, #5
+mul y, #5
+div y, #5
+add y, z
+sub y,x
+sub y,z
+mul y,z
+div y,x
+div y,z
+mod y,x
+mod y,z
+
+$6:
+add z, #5
+sub z,#5
+mul z,#5
+div z,#5
+sub z,x
+sub z,y
+div z,x
+div z,y
+mod z,x
+mod z,y
+
+
+$7:
+lsl x
+lsl y
+lsl z
+lsr x
+lsr y
+lsr z
+not x
+not y
+not z
+lod x, #5
+lod y, #5
+lod z, #5
+
+$8:
+and x,y
+and x,z
+and y,z
+xor x,z
+xor x,y
+xor y,z
+or x,y
+or x,z
+or y,z
+
+$9:
+and x, #5
+and y, #5
+and z, #5
+
+or x, #5
+or y, #5
+or z, #5
+
+xor x, #5
+xor y, #5
+xor z, #5
+
+mod x, #5
+mod y, #5
+mod z, #5
+
+$a:
+lod x, 5
+lod x, 5, y
+lod x, 5, z
+
+
+$b:
+lod y, 5
+lod y, 5, x
+lod y, 5, z
+
+$c:
+lod z, 5
+lod z, 5, x
+lod z, 5, y
+lod z, 5, yx
+
+$d:
+str x, 5
+str x, 5, y
+str x, 5, z
+
+str #5, 3, x
+str #5, 3, y
+str #5, 3, z
+str #5, 3
+
+$e:
+str y, 5
+str y, 5, x
+str y, 5, z
+
+$f:
+str z, 5
+str z, 5, x
+str z, 5, y
+str z, 5, yx
+str #5, 3, yx

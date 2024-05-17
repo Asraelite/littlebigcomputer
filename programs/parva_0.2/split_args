@@ -1,0 +1,45 @@
+
+let input_string: *word;
+
+
+let space: char;
+li space, ' ';
+
+let parts: quad;
+lq parts, input_string;
+
+b loop_1_no_align
+
+loop_1:
+
+andi input_string, input_string, 0b11
+
+# Frame 2
+
+loop_1_no_align:
+
+vindexof.6 x0, x1, x4
+bgez x0, split
+addi x8, x8, 1
+vindexof.6 x0, x1, x5
+bgez x0, split
+addi x8, x8, 1
+vindexof.6 x0, x1, x6
+bgez x0, split
+addi x8, x8, 1
+vindexof.6 x0, x1, x7
+bgez x0, split
+addi x8, x8, 1
+b loop_1
+
+# Frame 8
+
+split:
+
+@mul char_index, 6
+sll x1, x2, x1
+lw x0, [x8]
+xor x0, x0, x1
+
+addi x8, x8, 1
+

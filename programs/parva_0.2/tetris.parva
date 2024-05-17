@@ -1,0 +1,189 @@
+.arch parva_0_1
+
+# 1(sp): score
+# 2(sp): swap_block
+
+# x4: block lines 0/1
+# x5: block lines 2/3
+# x6: field lines 0/1
+# x7: field lines 2/3
+
+.include consts
+.include sys
+
+.string_encoding sys-6
+
+
+.data.ro
+
+srs_kick_table:
+# XY, 0 = 0, 1 = +1, 2 = +2, 7 = -1, 6 = -2
+# I block
+0o60_10_67_12
+0o70_20_72_27
+# TODO
+# J, L, T, S, Z blocks
+0o70_71_06_76
+0o10_17_02_12
+# TODO
+
+block_table:
+# I 0
+0b_0_0000_000000_0_0_1111_000000_0
+0b_0_1111_000000_0_0_0000_000000_0
+# I 1
+0b_0_0010_000000_0_0_0010_000000_0
+0b_0_0010_000000_0_0_0010_000000_0
+# TODO
+
+hi_score_filename: .string "tet_hiscr.dat\0"
+hi_score_file_error_message: .string .line_break 10 "could not open or create hi score file\0"
+score_string: .string "score\0"
+game_over_string: .string "game over\0"
+.scores_button_string: .string "scores\0"
+.start_button_string: .string "start\0"
+.next_string: .string "next\0"
+
+.data.rw
+
+.align const.cache_line_size
+swap_block: 0
+score: 0
+next_air_drop_time: 0
+next_floor_drop_time: 0
+stack: .repeat 0, 20
+
+hi_scores:
+.repeat 0, 20
+
+.eq score_string_x 30
+.eq score_string_y 10
+
+
+.text 
+
+_start:
+
+push ra
+
+load_hi_scores:
+
+li a0, hi_score_filename
+li a1, hi_scores
+li x0, 20
+call sys.read_file
+li x0, -1
+beq a0, x0, create_hi_score_file
+
+create_hi_score_file:
+
+li a0, hi_score_filename
+call sys.open_file
+
+bltz a0, error_hi_score_file
+
+wait:
+
+wait_loop:
+
+stub.kb.rdchar x0
+
+beqi x0, const.char.left_arrow, move_left
+beqi x0, const.char.right_arrow, move_right
+beqi x0, const.char.up_arrow, rotate
+beqi x0, const.char.space, hard_drop
+beqi x0, const.char.backspace, swap
+
+b wait_loop
+
+rotate:
+
+# x2 = current pos / block / rotation, [0 * 8, 4 bits for position x, 0 * 7, 3 bits for block type, 2 bits for rotation]
+
+addi x3, x2, 1
+andi x3, x3, 0b00011
+andi x2, x2, 0b11100
+or x2, x2, x3
+ld d0, [x2 + block_table]
+
+
+.align 4
+move_left:
+
+slli x0, x4, 1
+and x0, x0, x6
+bnez x0, fail
+slli x0, x5, 1
+and x0, x0, x7
+bnez x0, fail
+
+slli x4, x4, 1
+slli x5, x5, 1
+b move_successful
+
+.align 4
+move_right:
+
+srli x0, x4, 1
+and x0, x0, x6
+bnez x0, fail
+srli x0, x5, 1
+and x0, x0, x7
+bnez x0, fail
+
+srli x4, x4, 1
+srli x5, x5, 1
+b move_successful
+
+move_failed:
+
+# TODO
+
+move_successful:
+
+# TODO
+
+# decimal addition
+# input: x0 = score change
+.align 2
+add_score:
+
+lw x1, score
+add x0, x0, x1
+li x1, 0o1166
+and x2, x0, 0o77
+li x3, 10
+blt x2, x3, 2
+
+add x0, x0, x1
+slli x1, x1, 6
+srli x2, x0, 6
+andi x2, x0, 0o77
+blt x2, x3, end_score_change
+add x0, x0, x1
+
+slli x1, x1, 6
+srli x2, x0, 6
+andi x2, x0, 0o77
+blt x2, x3, end_score_change
+add x0, x0, x1
+slli x1, x1, 6
+
+srli x2 x0, 6
+andi x2, x0, 0o77
+blt x2, x3, end_score_change
+add x0, x0, x1
+
+.align 2
+end_score_change:
+
+sw x0, score
+
+
+
+
+quit:
+
+
+
+pop ra

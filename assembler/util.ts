@@ -1,4 +1,4 @@
-export function toBitString(n: number, bits: number, signed: boolean = false): string {
+export function toBitString(n: number, bits: number, signed: boolean = false, littleEndianByteSize: null | number = null): string {
 	const minimum = -(2 ** (bits - 1));
 	const maximum = signed ? (2 ** (bits - 1)) - 1 : 2 ** bits - 1;
 
@@ -18,6 +18,15 @@ export function toBitString(n: number, bits: number, signed: boolean = false): s
 	if (n !== 0) {
 		throw new Error(`Internal error: ${n} not zero after conversion to ${bits}-bit ${signed ? 'signed' : 'unsigned'} integer`);
 	}
+
+	if (littleEndianByteSize !== null) {
+		const bytes = [];
+		for (let i = 0; i < result.length / littleEndianByteSize; i++) {
+			bytes.push(result.substring(i * littleEndianByteSize, (i + 1) * littleEndianByteSize));
+		}
+		result = bytes.reverse().join('');
+	}
+
 	return result;
 }
 

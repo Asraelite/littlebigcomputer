@@ -1,0 +1,6 @@
+x = (y + 3) + 5;
+y += x;
+z = foo;
+fn test() {
+	poop = moop;
+}
